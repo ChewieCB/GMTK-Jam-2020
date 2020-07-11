@@ -1,6 +1,7 @@
 extends Node2D
 
 var Room = preload("res://src/maps/map_generation/room/Room.tscn")
+var Player = preload("res://src/test/grid_movement/entity/entity.tscn")
 onready var tile_map = $Borders
 onready var floor_map = $Floor
 onready var wall_map = $Wall
@@ -83,8 +84,24 @@ func make_rooms():
 	make_map()
 	yield(get_tree().create_timer(0.5), 'timeout')
 	make_walls()
-#	yield(get_tree().create_timer(0.5), 'timeout')
+	yield(get_tree().create_timer(0.5), 'timeout')
 #	place_nodes()
+	
+	# Place player
+	var floor_tiles = floor_map.get_used_cells()
+	var spawn_tiles = []
+	# Limit spawn points to tiles within rooms
+	var spawn_room = $Rooms.get_children()[rand_range(0, len($Rooms.get_children()))]
+	var room_extents = spawn_room.get_node("CollisionShape2D").shape.extents
+	var spawn_position = Vector2(
+		rand_range(spawn_room.position.x + floor_map.cell_size.x * 2, spawn_room.position.x + room_extents.x - floor_map.cell_size.x * 2),
+		rand_range(spawn_room.position.y + floor_map.cell_size.y * 2, spawn_room.position.y + room_extents.y - floor_map.cell_size.y * 2)
+	) 
+	var spawn_cell = floor_map.world_to_map(spawn_position)
+	
+	var player = Player.instance()
+	player.global_position = floor_map.map_to_world(spawn_cell)
+	add_child(player)
 
 
 func make_map():

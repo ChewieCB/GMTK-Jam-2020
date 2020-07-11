@@ -7,7 +7,6 @@
 extents = Vector2( 8, 8 )
 
 [node name="Player" type="KinematicBody2D"]
-scale = Vector2( 0.25, 0.25 )
 collision_mask = 2147483651
 script = ExtResource( 1 )
 
@@ -24,3 +23,7 @@ shape = SubResource( 1 )
 position = Vector2( 8, 8 )
 cast_to = Vector2( 0, 8 )
 collision_mask = 2
+
+[node name="Camera2D" type="Camera2D" parent="."]
+current = true
+zoom = Vector2( 0.25, 0.25 )
