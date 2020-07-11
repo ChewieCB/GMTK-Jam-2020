@@ -12,12 +12,12 @@ var top_left
 var bottom_right
 
 var tile_size = 16
-var num_rooms = 18
+var num_rooms = 20
 var min_size = 4
-var max_size = 12
-var hspread = 350
-var vspread = 254
-var cull = 0.5
+var max_size = 8
+var hspread = 150
+var vspread = 150
+var cull = 0.6
 
 var path # AStar pathfinding object
 
