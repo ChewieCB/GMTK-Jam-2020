@@ -2,6 +2,8 @@ extends Node2D
 
 var Room = preload("res://src/maps/map_generation/room/Room.tscn")
 var Player = preload("res://src/test/grid_movement/entity/entity.tscn")
+var ExitDoor = preload("res://src/maps/map_generation/exit_door/ExitDoor.tscn")
+
 onready var tile_map = $Borders
 onready var floor_map = $Floor
 onready var wall_map = $Wall
@@ -41,6 +43,9 @@ func _input(_event):
 		$Camera2D.position.y -= 30
 	elif Input.is_action_pressed("ui_down"):
 		$Camera2D.position.y += 30
+	
+	if Input.is_action_pressed("reset"):
+		get_tree().reload_current_scene()
 
 
 func _process(_delta):
@@ -93,15 +98,22 @@ func make_rooms():
 	# Limit spawn points to tiles within rooms
 	var spawn_room = $Rooms.get_children()[rand_range(0, len($Rooms.get_children()))]
 	var room_extents = spawn_room.get_node("CollisionShape2D").shape.extents
-	var spawn_position = Vector2(
+	
+	var spawn_position
+	var spawn_cell
+	var is_spawned = false
+	
+	spawn_position = Vector2(
 		rand_range(spawn_room.position.x + floor_map.cell_size.x * 2, spawn_room.position.x + room_extents.x - floor_map.cell_size.x * 2),
 		rand_range(spawn_room.position.y + floor_map.cell_size.y * 2, spawn_room.position.y + room_extents.y - floor_map.cell_size.y * 2)
 	) 
-	var spawn_cell = floor_map.world_to_map(spawn_position)
+	spawn_cell = floor_map.world_to_map(spawn_position)
 	
 	var player = Player.instance()
 	player.global_position = floor_map.map_to_world(spawn_cell)
 	add_child(player)
+	
+	place_exit_door()
 
 
 func make_map():
@@ -291,5 +303,42 @@ func place_nodes():
 		$Enemies.add_child(enemy)
 	# Make sure enemies don't spawn near/in the same room as the player
 	# TODO
+
+
+func place_exit_door():
+	# Find the room furthest from the player
+	# TODO
+	
+	# Only spawn in a room, not corridors
+	# TODO
+	
+	var wall_tiles = wall_map.get_used_cells()
+	var spawn_tiles = []
+	
+	var spawn_wall
+	var is_spawned = false
+	
+	while not is_spawned:
+		spawn_wall = wall_tiles[rand_range(0, len(wall_tiles))]
+		var relative_cells = [
+			Vector2(0, -2),
+			Vector2.UP,
+			Vector2.RIGHT,
+			Vector2.LEFT,
+		]
+		# Only spawn on lower wall tiles
+		for cell in relative_cells:
+			if wall_map.get_cellv(spawn_wall + cell) == -1:
+				continue
+		
+		is_spawned = true
+	
+	var exit_door = ExitDoor.instance()
+	exit_door.global_position = floor_map.map_to_world(spawn_wall)
+	add_child(exit_door)
+	# Choose a wall
+	
+	# Place the exit
+	pass
 
 
