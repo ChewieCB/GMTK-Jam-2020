@@ -340,8 +340,11 @@ script = ExtResource( 1 )
 
 [node name="Rooms" type="Node" parent="."]
 
+[node name="Enemies" type="Node" parent="."]
+
 [node name="Camera2D" type="Camera2D" parent="."]
 current = true
+zoom = Vector2( 2, 2 )
 
 [node name="Wall" type="TileMap" parent="."]
 tile_set = SubResource( 20 )
