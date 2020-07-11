@@ -1,7 +1,7 @@
 extends Node2D
 
 var Room = preload("res://src/maps/map_generation/room/Room.tscn")
-var Player = preload("res://src/test/grid_movement/entity/entity.tscn")
+var Player = preload("res://src/characters/player/Player.tscn")
 onready var tile_map = $Borders
 onready var floor_map = $Floor
 onready var wall_map = $Wall
