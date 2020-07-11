@@ -1,4 +1,4 @@
-extends Area2D
+extends KinematicBody2D
 
 var tile_size = 16
 var inputs = {"right": Vector2.RIGHT, "left": Vector2.LEFT, "up": Vector2.UP, "down": Vector2.DOWN}
@@ -20,10 +20,5 @@ func move(dir):
 	if !ray.is_colliding():
 		position += inputs[dir] * tile_size
 
-
-
-
-
-
-
+ 
 
