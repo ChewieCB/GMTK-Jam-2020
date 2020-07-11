@@ -8,15 +8,24 @@
 
 config_version=4
 
-_global_script_classes=[  ]
+_global_script_classes=[ {
+"base": "RigidBody2D",
+"class": "Room",
+"language": "GDScript",
+"path": "res://src/maps/map_generation/room/room.gd"
+} ]
 _global_script_class_icons={
-
+"Room": ""
 }
 
 [application]
 
 config/name="GMTK Jam 2020"
 config/icon="res://icon.png"
+
+[physics]
+
+2d/default_gravity=0
 
 [rendering]
 
