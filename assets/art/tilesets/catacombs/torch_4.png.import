@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/icon.png-487276ed1e3a0c39cad0279d744ee560.stex"
+path="res://.import/torch_4.png-3505fd6aee8918cdb821583cdd010991.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://icon.png"
-dest_files=[ "res://.import/icon.png-487276ed1e3a0c39cad0279d744ee560.stex" ]
+source_file="res://assets/art/tilesets/catacombs/torch_4.png"
+dest_files=[ "res://.import/torch_4.png-3505fd6aee8918cdb821583cdd010991.stex" ]
 
 [params]
 
