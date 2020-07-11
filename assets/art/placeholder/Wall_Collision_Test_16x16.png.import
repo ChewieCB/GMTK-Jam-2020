@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/Wall_Collision_Test_16x16.png-9aa4bac72a648a64afe3b6440d2d4431.stex"
+path="res://.import/Wall_Collision_Test_16x16.png-7e2d11ff2fe5a89af32a9d6f72e57912.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://scenes/Wall_Collision_Test_16x16.png"
-dest_files=[ "res://.import/Wall_Collision_Test_16x16.png-9aa4bac72a648a64afe3b6440d2d4431.stex" ]
+source_file="res://assets/art/placeholder/Wall_Collision_Test_16x16.png"
+dest_files=[ "res://.import/Wall_Collision_Test_16x16.png-7e2d11ff2fe5a89af32a9d6f72e57912.stex" ]
 
 [params]
 

@@ -83,8 +83,8 @@ func make_rooms():
 	make_map()
 	yield(get_tree().create_timer(0.5), 'timeout')
 	make_walls()
-	yield(get_tree().create_timer(0.5), 'timeout')
-	place_nodes()
+#	yield(get_tree().create_timer(0.5), 'timeout')
+#	place_nodes()
 
 
 func make_map():

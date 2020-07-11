@@ -21,7 +21,7 @@ _global_script_class_icons={
 [application]
 
 config/name="GMTK Jam 2020"
-run/main_scene="res://scenes/grid-based-movement-test.tscn"
+run/main_scene="res://src/test/grid_movement/grid-based-movement-test.tscn"
 config/icon="res://icon.png"
 
 [input]
