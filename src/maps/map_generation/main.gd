@@ -119,8 +119,8 @@ func make_map():
 						room.get_node("CollisionShape2D").shape.extents * 2)
 		full_rect = full_rect.merge(_rect)
 	# Set loop bounds
-	top_left = tile_map.world_to_map(full_rect.position)
-	bottom_right = tile_map.world_to_map(full_rect.end)
+	top_left = tile_map.world_to_map(full_rect.position - tile_map.cell_size)
+	bottom_right = tile_map.world_to_map(full_rect.end + tile_map.cell_size)
 	# Loop over positions and set tiles to solid
 	for x in range(top_left.x, bottom_right.x):
 		for y in range(top_left.y, bottom_right.y):
