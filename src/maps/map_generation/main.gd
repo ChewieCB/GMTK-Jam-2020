@@ -41,10 +41,10 @@ func _process(_delta):
 	update()
 
 
-func _draw():
-	if debug_tiles:
-		for tile in debug_tiles:
-			draw_rect(Rect2(tile, tile_map.cell_size), Color(1, 0, 0, 0.5))
+#func _draw():
+#	if debug_tiles:
+#		for tile in debug_tiles:
+#			draw_rect(Rect2(tile, tile_map.cell_size), Color(1, 0, 0, 0.5))
 
 
 func make_rooms():
@@ -70,8 +70,8 @@ func make_rooms():
 	path = find_mst(room_positions)
 	yield(get_tree(), 'idle_frame')
 	make_map()
-#	yield(get_tree(), 'idle_frame')
-#	build_walls()
+	yield(get_tree().create_timer(1.1), 'timeout')
+	build_walls()
 
 
 func find_mst(nodes):
@@ -183,27 +183,31 @@ func carve_path(pos1, pos2):
 
 
 func build_walls():
+	debug_tiles = []
 	# Get all the floor tiles
 	var floor_tiles = floor_map.get_used_cells()
+	var possible_wall_tiles = []
 	# Filter out the ones that do not have space above them
 	for tile in floor_tiles:
-		var tile_above = tile + Vector2(0, -floor_map.cell_size.y)
-		if floor_map.get_cellv(tile_above) != -1:
-			floor_tiles.erase(tile)
-	debug_tiles = floor_tiles.duplicate()
-#	# Draw 2 high walls in place of some floor tiles
-#	for free_tile in floor_tiles:
-#		var tile_below = free_tile + Vector2(0, floor_map.cell_size.y)
+		var tile_above = tile + Vector2(0, -1)
+		if floor_map.get_cellv(tile_above) == -1:
+			possible_wall_tiles.append(tile)
+	
+	for tile in possible_wall_tiles:
+		debug_tiles.append(floor_map.map_to_world(tile))
+	# Draw 2 high walls in place of some floor tiles
+	for free_tile in possible_wall_tiles:
+		var tile_below = free_tile + Vector2(0, 1)
 #		# Erase this tile and the tile below this one to make a 2 high wall
 #		floor_map.set_cellv(free_tile, -1)
 #		floor_map.set_cellv(tile_below, -1)
-#		# Take the free tile as the top of the walland  the cell below as 
-#		# the bottom of the wall
-#		wall_map.set_cellv(free_tile, 0)
-#		wall_map.set_cellv(tile_below, 0)
-#
-#	# Update the autotile
-#	floor_map.update_bitmask_region(top_left, bottom_right)
-#	wall_map.update_bitmask_region(top_left, bottom_right)
+		# Take the free tile as the top of the walland  the cell below as 
+		# the bottom of the wall
+		wall_map.set_cellv(free_tile, 0)
+		wall_map.set_cellv(tile_below, 0)
+
+	# Update the autotile
+	floor_map.update_bitmask_region(top_left, bottom_right)
+	wall_map.update_bitmask_region(top_left, bottom_right)
 	
 
