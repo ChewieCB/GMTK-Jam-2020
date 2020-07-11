@@ -11,12 +11,12 @@ var top_left
 var bottom_right
 
 var tile_size = 16
-var num_rooms = 12
-var min_size = 6
+var num_rooms = 18
+var min_size = 4
 var max_size = 12
 var hspread = 350
 var vspread = 254
-var cull = 0.4
+var cull = 0.5
 
 var path # AStar pathfinding object
 
@@ -33,13 +33,13 @@ func _ready():
 
 func _input(_event):
 	if Input.is_action_pressed("ui_left"):
-		$Camera2D.offset.x -= 30
+		$Camera2D.position.x -= 30
 	elif Input.is_action_pressed("ui_right"):
-		$Camera2D.offset.x += 30
+		$Camera2D.position.x += 30
 	if Input.is_action_pressed("ui_up"):
-		$Camera2D.offset.y -= 30
+		$Camera2D.position.y -= 30
 	elif Input.is_action_pressed("ui_down"):
-		$Camera2D.offset.y += 30
+		$Camera2D.position.y += 30
 
 
 func _process(_delta):
@@ -143,11 +143,10 @@ func carve_path(pos1, pos2):
 	for x in range(pos1.x, pos2.x, x_diff):
 		tile_map.set_cell(x, x_y.y, -1)
 		tile_map.set_cell(x, x_y.y + y_diff, -1)  # widen the corridor
-		tile_map.set_cell(x, x_y.y - y_diff, -1)
+		tile_map.set_cell(x, x_y.y + 2 * y_diff, -1)
 	for y in range(pos1.y, pos2.y, y_diff):
 		tile_map.set_cell(y_x.x, y, -1)
 		tile_map.set_cell(y_x.x + x_diff, y, -1)  # widen the corridor
-		tile_map.set_cell(y_x.x - x_diff, y, -1)
 
 
 func make_floors():
