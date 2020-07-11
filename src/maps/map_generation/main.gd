@@ -21,7 +21,7 @@ var cull = 0.5
 var path # AStar pathfinding object
 
 # Enemy spawning
-var enemies_to_spawn
+var nodes_to_spawn
 var PlaceholderEnemy = preload("res://src/characters/enemies/placeholder/PlaceholderEnemy.tscn")
 
 
@@ -84,7 +84,7 @@ func make_rooms():
 	yield(get_tree().create_timer(0.5), 'timeout')
 	make_walls()
 	yield(get_tree().create_timer(0.5), 'timeout')
-	place_enemies()
+	place_nodes()
 
 
 func make_map():
@@ -182,9 +182,6 @@ func make_walls():
 	# Draw 2 high walls in place of some floor tiles
 	for free_tile in possible_wall_tiles:
 		var tile_below = free_tile + Vector2(0, 1)
-#		# Erase this tile and the tile below this one to make a 2 high wall
-#		floor_map.set_cellv(free_tile, -1)
-#		floor_map.set_cellv(tile_below, -1)
 		# Take the free tile as the top of the walland  the cell below as 
 		# the bottom of the wall
 		wall_map.set_cellv(free_tile, 0)
@@ -230,8 +227,8 @@ func find_mst(nodes):
 	return _path
 
 
-func place_enemies():
-	enemies_to_spawn = int(rand_range(50, 200))
+func place_nodes():
+	nodes_to_spawn = int(rand_range(50, 200))
 	# Get all the floor tiles as possible spawn points
 	var floor_tiles = floor_map.get_used_cells()
 	var spawn_tiles = []
@@ -240,7 +237,7 @@ func place_enemies():
 		# Skip some rooms
 		var room_extents = room.get_node("CollisionShape2D").shape.extents
 		for _i in range(rand_range(0, 4)):
-			if enemies_to_spawn > 0:
+			if nodes_to_spawn > 0:
 				var spawn_position
 				var is_spawned = false
 				while not is_spawned:
@@ -264,11 +261,12 @@ func place_enemies():
 					
 					if not spawn_cell in spawn_tiles:
 						spawn_tiles.append(spawn_cell)
-						enemies_to_spawn -= 1
+						nodes_to_spawn -= 1
 						is_spawned = true
 					else:
 						continue
-			
+	
+	# Place enemies
 	for tile in spawn_tiles:
 		var enemy = PlaceholderEnemy.instance()
 		var spawn_position = floor_map.map_to_world(tile)
@@ -276,9 +274,5 @@ func place_enemies():
 		$Enemies.add_child(enemy)
 	# Make sure enemies don't spawn near/in the same room as the player
 	# TODO
-	
-	# Place enemies
-	# TODO
-	
-	pass
+
 
