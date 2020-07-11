@@ -12,7 +12,7 @@ func _unhandled_input(event):
 		if event.is_action_pressed(dir):
 			move(dir)
 
-onready var ray = $Raycast2D
+onready var ray = $RayCast2D
 
 func move(dir):
 	ray.cast_to = inputs[dir] * tile_size
