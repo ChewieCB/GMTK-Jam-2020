@@ -51,6 +51,13 @@ right={
  ]
 }
 
+[layer_names]
+
+2d_render/layer_1="Player"
+2d_physics/layer_1="Player"
+2d_render/layer_2="Obstacles"
+2d_physics/layer_2="Obstacles"
+
 [rendering]
 
 quality/driver/driver_name="GLES2"
