@@ -1,7 +1,7 @@
 extends Node2D
 
 var Room = preload("res://src/maps/map_generation/room/Room.tscn")
-var Player = preload("res://src/test/grid_movement/entity/entity.tscn")
+var Player = preload("res://src/characters/player/Player.tscn")
 
 onready var tile_map = $Borders
 onready var floor_map = $Floor
@@ -35,14 +35,14 @@ func _ready():
 
 
 func _input(event):
-	if Input.is_action_pressed("ui_left"):
-		$Camera2D.position.x -= 30
-	elif Input.is_action_pressed("ui_right"):
-		$Camera2D.position.x += 30
-	if Input.is_action_pressed("ui_up"):
-		$Camera2D.position.y -= 30
-	elif Input.is_action_pressed("ui_down"):
-		$Camera2D.position.y += 30
+	if Input.is_action_pressed("reset"):
+		get_tree().reload_current_scene()
+
+
+func _draw():
+	if walkable_cells:
+		for cell in walkable_cells:
+			draw_circle(floor_map.map_to_world(cell) + floor_map.cell_size / 2, 3, Color(1, 1, 1, 1))
 
 
 func _process(_delta):
@@ -84,8 +84,8 @@ func make_rooms():
 	
 	# Generate the pathfinding graph
 	generate_pathfinding_nodes()
-
- #	place_nodes()
+	
+	place_nodes()
 	
 	# Place player
 	var floor_tiles = floor_map.get_used_cells()
@@ -185,7 +185,6 @@ func make_floors():
 
 
 func make_walls():
-	debug_tiles = []
 	# Get all the floor tiles
 	var floor_tiles = floor_map.get_used_cells()
 	var possible_wall_tiles = []
@@ -195,8 +194,6 @@ func make_walls():
 		if floor_map.get_cellv(tile_above) == -1:
 			possible_wall_tiles.append(tile)
 	
-	for tile in possible_wall_tiles:
-		debug_tiles.append(floor_map.map_to_world(tile))
 	# Draw 2 high walls in place of some floor tiles
 	for free_tile in possible_wall_tiles:
 		var tile_below = free_tile + Vector2(0, 1)
@@ -246,7 +243,7 @@ func find_mst(nodes):
 
 
 func place_nodes():
-	nodes_to_spawn = int(rand_range(50, 200))
+	nodes_to_spawn = 1 #int(rand_range(50, 200))
 	# Get all the floor tiles as possible spawn points
 	var floor_tiles = floor_map.get_used_cells()
 	var spawn_tiles = []
@@ -301,7 +298,7 @@ func generate_pathfinding_nodes():
 	# Loop through the walkable cells and add them to the AStar node
 	for cell in walkable_cells:
 		# Remove any cells that overlap with wall tiles
-		if wall_map.get_cellv(cell) != -1:
+		if wall_map.get_cellv(cell) != -1 or tile_map.get_cellv(cell) != -1:
 			walkable_cells.erase(cell)
 		else:
 #			var cell_world = floor_map.map_to_world(cell)
@@ -326,3 +323,10 @@ func generate_pathfinding_nodes():
 				continue
 			
 			astar_node.connect_points(point_index, point_relative_index, true)
+
+
+func calculate_point_index(point) -> int:
+	var map_limits = tile_map.get_used_rect()
+	# Subtract offset from position
+	point -= map_limits.position
+	return point.y * map_limits.size.x + point.x

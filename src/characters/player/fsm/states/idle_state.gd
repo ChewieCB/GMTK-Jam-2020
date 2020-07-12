@@ -9,7 +9,7 @@ const inputs = {
 
 
 func enter(entity, optional_args=null):
-	print("Enter idle state.")
+	print("%s enter idle state." % [entity.name])
 
 
 func handle_input(entity, delta):
@@ -19,5 +19,5 @@ func handle_input(entity, delta):
 
 
 func exit(entity):
-	print("Exit idle state.")
+	print("%s exit idle state." % [entity.name])
 

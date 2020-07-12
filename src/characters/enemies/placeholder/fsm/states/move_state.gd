@@ -18,7 +18,7 @@ var is_path_finished = false
 
 
 func enter(entity, optional_args=null):
-	print("Enter Move State")
+	print("%s enter Move State" % [entity.name])
 	# If no optional args are passed then we don't have a target point to path
 	# to and something has fucked up
 #	if not _target_position:
@@ -71,7 +71,7 @@ func move_to(entity, world_position):
 
 
 func exit(entity):
-	print("Exit Move state.")
+	print("%s exit Move state." % [entity.name])
 
 
 

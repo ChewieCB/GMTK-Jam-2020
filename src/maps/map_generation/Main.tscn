@@ -590,13 +590,16 @@ points = PoolVector2Array( 16, 16, 0, 16, 0, 0, 16, 0 )
 
 [node name="Main" type="Node2D"]
 script = ExtResource( 1 )
+__meta__ = {
+"_edit_horizontal_guides_": [ 344.0, -64.0, -384.0, -64.0, 160.0 ],
+"_edit_vertical_guides_": [ 312.0, -272.0, 0.0, -64.0 ]
+}
 
 [node name="Rooms" type="Node" parent="."]
 
 [node name="Enemies" type="Node" parent="."]
 
 [node name="Camera2D" type="Camera2D" parent="."]
-current = true
 zoom = Vector2( 0.5, 0.5 )
 
 [node name="Wall" type="TileMap" parent="."]
