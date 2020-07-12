@@ -7,6 +7,8 @@ const inputs = {
 	"down": Vector2.DOWN
 }
 
+export var move_speed = 3
+
 var tile_size = 16
 var movement_direction
 var raycast
@@ -20,12 +22,6 @@ var is_path_finished = false
 func enter(entity, optional_args=null):
 	print("%s enter Move State" % [entity.name])
 	raycast = entity.get_node("RayCast2D")
-	# If no optional args are passed then we don't have a target point to path
-	# to and something has fucked up
-#	if not _target_position:
-#		push_error("_target_positon arg not found, Move state requires a valid position to path to!")
-#		var is_path_finished = true
-#		return
 	path = entity._point_path
 
 
@@ -58,9 +54,14 @@ func move_to(entity, world_position):
 	# Grid movement
 	raycast.cast_to = movement_direction * tile_size / 2
 	raycast.force_raycast_update()
-	if !raycast.is_colliding():
-		entity.position += movement_direction * tile_size
-		var test = entity.position.distance_to(world_position)
+	if !raycast.is_colliding() and not entity.tween.is_active():
+		#entity.position += movement_direction * tile_size
+		
+		entity.tween.interpolate_property(entity, "position",
+		entity.position, entity.position + movement_direction * tile_size,
+		1.0/move_speed, Tween.TRANS_SINE, Tween.EASE_IN_OUT)
+		entity.tween.start()
+		
 		return true
 	else:
 		return false

@@ -1,6 +1,7 @@
 extends KinematicBody2D
 
 onready var state_machine = $StateMachine
+onready var tween = $Tween
 
 var _point_path = []
 var path_start_position = Vector2() setget set_path_start_position
@@ -82,7 +83,7 @@ func set_path_start_position(value):
 		path_start_position = value
 		self.global_position = path_start_position + tile_map.cell_size / 2
 		_recalculate_path()
-		state_machine.set_state(state_machine.states.Move)
+		#state_machine.set_state(state_machine.states.Move)
 
 
 func set_path_end_position(value):

@@ -22,6 +22,8 @@ shape = SubResource( 1 )
 [node name="RayCast2D" type="RayCast2D" parent="."]
 cast_to = Vector2( 0, 8 )
 
+[node name="Tween" type="Tween" parent="."]
+
 [node name="StateMachine" type="Node" parent="."]
 script = ExtResource( 3 )
 
