@@ -1,12 +1,11 @@
 extends Node2D
 
 var Room = preload("res://src/maps/map_generation/room/Room.tscn")
-var Player = preload("res://src/test/grid_movement/entity/entity.tscn")
+var Player = preload("res://src/characters/player/Player.tscn")
+
 onready var tile_map = $Borders
 onready var floor_map = $Floor
 onready var wall_map = $Wall
-
-var debug_tiles
 
 var top_left
 var bottom_right
@@ -19,7 +18,11 @@ var hspread = 150
 var vspread = 150
 var cull = 0.6
 
-var path # AStar pathfinding object
+var corridor_path # AStar pathfinding object
+
+# Pathfinding
+var astar_node = AStar2D.new()
+var walkable_cells = []
 
 # Enemy spawning
 var nodes_to_spawn
@@ -29,28 +32,21 @@ var PlaceholderEnemy = preload("res://src/characters/enemies/placeholder/Placeho
 func _ready():
 	randomize()
 	make_rooms()
-		
 
 
-func _input(_event):
-	if Input.is_action_pressed("ui_left"):
-		$Camera2D.position.x -= 30
-	elif Input.is_action_pressed("ui_right"):
-		$Camera2D.position.x += 30
-	if Input.is_action_pressed("ui_up"):
-		$Camera2D.position.y -= 30
-	elif Input.is_action_pressed("ui_down"):
-		$Camera2D.position.y += 30
+func _input(event):
+	if Input.is_action_pressed("reset"):
+		get_tree().reload_current_scene()
+
+
+func _draw():
+	if walkable_cells:
+		for cell in walkable_cells:
+			draw_circle(cell + floor_map.cell_size / 2, 3, Color(1, 1, 1, 1))
 
 
 func _process(_delta):
 	update()
-
-
-#func _draw():
-#	if debug_tiles:
-#		for tile in debug_tiles:
-#			draw_rect(Rect2(tile, tile_map.cell_size), Color(1, 0, 0, 0.5))
 
 
 func make_rooms():
@@ -77,7 +73,7 @@ func make_rooms():
 	yield(get_tree(), 'idle_frame')
 	
 	# Generate a minimum spanning tree connecting the rooms
-	path = find_mst(room_positions)
+	corridor_path = find_mst(room_positions)
 	yield(get_tree(), 'idle_frame')
 	
 	# Build the map
@@ -85,7 +81,11 @@ func make_rooms():
 	yield(get_tree().create_timer(0.5), 'timeout')
 	make_walls()
 	yield(get_tree().create_timer(0.5), 'timeout')
-#	place_nodes()
+	
+	# Generate the pathfinding graph
+	generate_pathfinding_nodes()
+	
+	place_nodes()
 	
 	# Place player
 	var floor_tiles = floor_map.get_used_cells()
@@ -104,8 +104,9 @@ func make_rooms():
 	add_child(player)
 
 
+
 func make_map():
-	# Create a tilemap from the generated rooms and path
+	# Create a tilemap from the generated rooms and corridor_path
 	tile_map.clear()
 	# Get the size of the map
 	var full_rect = Rect2()
@@ -136,17 +137,17 @@ func carve_rooms():
 				tile_map.set_cell(room_upper_left.x + x, room_upper_left.y + y, -1)
 		
 		# Carve connecting corridor
-		var point = path.get_closest_point(room.position)
-		for connection in path.get_point_connections(point):
+		var point = corridor_path.get_closest_point(room.position)
+		for connection in corridor_path.get_point_connections(point):
 			if not connection in corridors:
-				var start = tile_map.world_to_map(path.get_point_position(point))
-				var end = tile_map.world_to_map(path.get_point_position(connection))
+				var start = tile_map.world_to_map(corridor_path.get_point_position(point))
+				var end = tile_map.world_to_map(corridor_path.get_point_position(connection))
 				carve_path(start, end)
 		corridors.append(point)
 
 
 func carve_path(pos1, pos2):
-	# Carves a path between two points
+	# Carves a corridor_path between two points
 	var x_diff = sign(pos2.x - pos1.x)
 	var y_diff = sign(pos2.y - pos1.y)
 	if x_diff == 0: x_diff = pow(-1.0, randi() % 2)
@@ -184,7 +185,6 @@ func make_floors():
 
 
 func make_walls():
-	debug_tiles = []
 	# Get all the floor tiles
 	var floor_tiles = floor_map.get_used_cells()
 	var possible_wall_tiles = []
@@ -194,8 +194,6 @@ func make_walls():
 		if floor_map.get_cellv(tile_above) == -1:
 			possible_wall_tiles.append(tile)
 	
-	for tile in possible_wall_tiles:
-		debug_tiles.append(floor_map.map_to_world(tile))
 	# Draw 2 high walls in place of some floor tiles
 	for free_tile in possible_wall_tiles:
 		var tile_below = free_tile + Vector2(0, 1)
@@ -245,7 +243,7 @@ func find_mst(nodes):
 
 
 func place_nodes():
-	nodes_to_spawn = int(rand_range(50, 200))
+	nodes_to_spawn = 1 #int(rand_range(50, 200))
 	# Get all the floor tiles as possible spawn points
 	var floor_tiles = floor_map.get_used_cells()
 	var spawn_tiles = []
@@ -286,10 +284,51 @@ func place_nodes():
 	# Place enemies
 	for tile in spawn_tiles:
 		var enemy = PlaceholderEnemy.instance()
-		var spawn_position = floor_map.map_to_world(tile)
+		var spawn_position = floor_map.map_to_world(tile) + floor_map.cell_size / 2
 		enemy.global_position = spawn_position
 		$Enemies.add_child(enemy)
 	# Make sure enemies don't spawn near/in the same room as the player
 	# TODO
 
 
+func generate_pathfinding_nodes():
+	# Generate the AStar nodes
+	var used_cells = floor_map.get_used_cells()
+	var pathfinding_nodes = []
+	walkable_cells = []
+	# Loop through the walkable cells and add them to the AStar node
+	for cell in used_cells:
+		# Remove any cells that overlap with wall tiles
+		if wall_map.get_cellv(cell) != -1 or tile_map.get_cellv(cell) != -1:
+			used_cells.erase(cell)
+		else:
+#			var cell_world = floor_map.map_to_world(cell)
+			astar_node.add_point(calculate_point_index(cell), cell)
+			pathfinding_nodes.append(cell)
+			walkable_cells.append(floor_map.map_to_world(cell))
+	
+	# Connect the astar nodes
+	for point in pathfinding_nodes:
+		var point_index = calculate_point_index(point)
+		# For every cell in the map, we check the one to the top, right.
+		# left and bottom of it. If it's in the map and not an obstalce,
+		# We connect the current point with it
+		var points_relative = PoolVector2Array([
+			Vector2(point.x + 1, point.y),
+			Vector2(point.x - 1, point.y),
+			Vector2(point.x, point.y + 1),
+			Vector2(point.x, point.y - 1)])
+		for point_relative in points_relative:
+			var point_relative_index = calculate_point_index(point_relative)
+			
+			if not astar_node.has_point(point_relative_index):
+				continue
+			
+			astar_node.connect_points(point_index, point_relative_index, true)
+
+
+func calculate_point_index(point) -> int:
+	var map_limits = tile_map.get_used_rect()
+#	# Subtract offset from position
+	point -= map_limits.position
+	return point.y * map_limits.size.x + point.x
