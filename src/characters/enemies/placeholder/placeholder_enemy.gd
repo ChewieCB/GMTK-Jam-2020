@@ -17,12 +17,12 @@ var target_position = null
 
 func _draw() -> void:
 	if _point_path:
-		var point_start = _point_path[0] - self.position
-		var point_end = _point_path[len(_point_path) - 1]
+		var point_start = tile_map.map_to_world(_point_path[0]) - self.position + _half_cell_size
+		var point_end = tile_map.map_to_world(_point_path[len(_point_path) - 1])+ _half_cell_size
 
 		var last_point = Vector2(point_start.x, point_start.y)# + _half_cell_size
 		for index in range(0, len(_point_path)):
-			var current_point = Vector2(_point_path[index].x - self.position.x, _point_path[index].y - self.position.y)# + _half_cell_size
+			var current_point = Vector2(tile_map.map_to_world(_point_path[index]) - self.position) + _half_cell_size
 			draw_line(last_point, current_point, Color(1, 1, 1, 1), 1.5, true)
 			if index == 0:
 				draw_circle(current_point, 4, Color(1, 0, 0, 1))
@@ -40,13 +40,6 @@ func _physics_process(delta):
 	update()
 
 
-func calculate_point_index(point) -> int:
-	var map_limits = tile_map.get_used_rect()
-	# Subtract offset from position
-	point -= map_limits.position
-	return point.y * map_limits.size.x + point.x
-
-
 func find_path(world_start, world_end) -> Array:
 	self.path_start_position = world_start
 	self.path_end_position = world_end
@@ -58,12 +51,8 @@ func find_path(world_start, world_end) -> Array:
 
 
 func _recalculate_path() -> void:
-	# Make sure start point is the node's current position
-	var start_pos_world = tile_map.world_to_map(self.global_position) + _half_cell_size
-	self.path_start_position = tile_map.map_to_world(start_pos_world)
-	
-	var start_point_index = calculate_point_index(path_start_position)
-	var end_point_index = calculate_point_index(path_end_position)
+	var start_point_index = level.calculate_point_index(tile_map.world_to_map(path_start_position))
+	var end_point_index = level.calculate_point_index(tile_map.world_to_map(path_end_position))
 	# This method gives us an array of points. Note you need the start and end
 	# points' indices as input
 	_point_path = astar_node.get_point_path(start_point_index, end_point_index)
@@ -76,29 +65,28 @@ func _input(event) -> void:
 	# TODO - add a command for this in the debug console
 	if event.is_action_pressed('click'):
 		var new_position = tile_map.world_to_map(get_global_mouse_position())
+		var new_position_world = tile_map.map_to_world(new_position)
 		if Input.is_key_pressed(KEY_SHIFT):
-			set_path_start_position(new_position)
+			set_path_start_position(new_position_world)
 		else:
-			set_path_end_position(new_position)
+			set_path_end_position(new_position_world)
 
 
 # SETTERS
 
 func set_path_start_position(value):
 	if not value in graph_nodes:
-		print("NOPE!")
 		return
 	
 	if path_end_position and path_end_position != path_start_position:
 		path_start_position = value
-		self.global_position = Vector2(path_start_position.x, path_start_position.y - tile_map.cell_size.y) 
+		self.global_position = path_start_position + tile_map.cell_size / 2
 		_recalculate_path()
 		state_machine.set_state(state_machine.states.Move)
 
 
 func set_path_end_position(value):
 	if not value in graph_nodes:
-		print("NOPE!")
 		return
 	
 	path_end_position = value

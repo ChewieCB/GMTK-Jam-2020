@@ -42,7 +42,7 @@ func _input(event):
 func _draw():
 	if walkable_cells:
 		for cell in walkable_cells:
-			draw_circle(floor_map.map_to_world(cell) + floor_map.cell_size / 2, 3, Color(1, 1, 1, 1))
+			draw_circle(cell + floor_map.cell_size / 2, 3, Color(1, 1, 1, 1))
 
 
 func _process(_delta):
@@ -284,7 +284,7 @@ func place_nodes():
 	# Place enemies
 	for tile in spawn_tiles:
 		var enemy = PlaceholderEnemy.instance()
-		var spawn_position = floor_map.map_to_world(tile)
+		var spawn_position = floor_map.map_to_world(tile) + floor_map.cell_size / 2
 		enemy.global_position = spawn_position
 		$Enemies.add_child(enemy)
 	# Make sure enemies don't spawn near/in the same room as the player
@@ -293,17 +293,19 @@ func place_nodes():
 
 func generate_pathfinding_nodes():
 	# Generate the AStar nodes
-	walkable_cells = floor_map.get_used_cells()
+	var used_cells = floor_map.get_used_cells()
 	var pathfinding_nodes = []
+	walkable_cells = []
 	# Loop through the walkable cells and add them to the AStar node
-	for cell in walkable_cells:
+	for cell in used_cells:
 		# Remove any cells that overlap with wall tiles
 		if wall_map.get_cellv(cell) != -1 or tile_map.get_cellv(cell) != -1:
-			walkable_cells.erase(cell)
+			used_cells.erase(cell)
 		else:
 #			var cell_world = floor_map.map_to_world(cell)
 			astar_node.add_point(calculate_point_index(cell), cell)
 			pathfinding_nodes.append(cell)
+			walkable_cells.append(floor_map.map_to_world(cell))
 	
 	# Connect the astar nodes
 	for point in pathfinding_nodes:
@@ -327,6 +329,6 @@ func generate_pathfinding_nodes():
 
 func calculate_point_index(point) -> int:
 	var map_limits = tile_map.get_used_rect()
-	# Subtract offset from position
+#	# Subtract offset from position
 	point -= map_limits.position
 	return point.y * map_limits.size.x + point.x

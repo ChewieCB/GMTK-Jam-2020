@@ -19,6 +19,7 @@ var is_path_finished = false
 
 func enter(entity, optional_args=null):
 	print("%s enter Move State" % [entity.name])
+	raycast = entity.get_node("RayCast2D")
 	# If no optional args are passed then we don't have a target point to path
 	# to and something has fucked up
 #	if not _target_position:
@@ -26,6 +27,9 @@ func enter(entity, optional_args=null):
 #		var is_path_finished = true
 #		return
 	path = entity._point_path
+
+
+func handle_input(entity, _delta):
 	if not path or len(path) == 1:
 		is_path_finished = true
 		return
@@ -33,19 +37,8 @@ func enter(entity, optional_args=null):
 		is_path_finished = false
 		# The index 0 is the starting cell
 		# we don't want the character to move back to it in this example
-		target_point_world = path[1]
+		target_point_world = entity.tile_map.map_to_world(path[1])
 
-
-func move(entity, direction):
-	raycast.cast_to = inputs[direction] * tile_size
-	raycast.force_raycast_update()
-	if !raycast.is_colliding():
-		entity.position += inputs[direction] * tile_size
-	
-	return true
-
-
-func handle_input(entity, _delta):
 	if is_path_finished:
 		return "Idle"
 	else:
@@ -61,19 +54,22 @@ func handle_input(entity, _delta):
 
 func move_to(entity, world_position):
 	var ARRIVE_DISTANCE = 2
-	var movement_direction = (world_position - entity.position).normalized()
+	var movement_direction = (world_position - entity.position + entity._half_cell_size).normalized()
 	# Grid movement
-	raycast.cast_to = movement_direction * tile_size
+	raycast.cast_to = movement_direction * tile_size / 2
 	raycast.force_raycast_update()
 	if !raycast.is_colliding():
 		entity.position += movement_direction * tile_size
-		return entity.position.distance_to(world_position) < ARRIVE_DISTANCE
+		var test = entity.position.distance_to(world_position)
+		return true
+	else:
+		return false
 
 
 func exit(entity):
 	print("%s exit Move state." % [entity.name])
-
-
+#	# Set the path start point to the current node position
+#	entity.path_start_position = entity.global_position
 
 
 
